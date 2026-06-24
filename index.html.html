@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Carrusel de Promociones</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;600;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Figtree', sans-serif;
+      background: #0d0d0d;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+    }
+
+    /* ─── Título de sección ─────────────────────────── */
+    .section-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.35);
+      margin-bottom: 1.2rem;
+      text-align: center;
+    }
+
+    /* ─── Contenedor principal ──────────────────────── */
+    .carousel-wrap {
+      width: 100%;
+      max-width: 900px;
+    }
+
+    .track-container {
+      position: relative;
+      width: 100%;
+      overflow: hidden;
+      border-radius: 18px;
+    }
+
+    .track {
+      display: flex;
+      transition: transform 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+      will-change: transform;
+    }
+
+    /* ─── Cada slide ────────────────────────────────── */
+    .slide {
+      flex: 0 0 100%;
+      position: relative;
+      overflow: hidden;
+      border-radius: 18px;
+    }
+
+    .slide-inner {
+      display: block;
+      position: relative;
+      width: 100%;
+      height: 400px;
+      text-decoration: none;
+      overflow: hidden;
+    }
+
+    .slide-bg {
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: center;
+      transition: transform 0.6s ease;
+    }
+
+    .slide:hover .slide-bg {
+      transform: scale(1.04);
+    }
+
+    /* Degradado sobre la imagen */
+    .slide-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        120deg,
+        rgba(0,0,0,0.80) 0%,
+        rgba(0,0,0,0.45) 50%,
+        rgba(0,0,0,0.10) 100%
+      );
+    }
+
+    /* ─── Contenido del slide ───────────────────────── */
+    .slide-content {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      padding: 2.2rem 2.5rem;
+      z-index: 3;
+      max-width: 560px;
+    }
+
+    .slide-badge {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 4px 12px;
+      border-radius: 30px;
+      margin-bottom: 12px;
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.4);
+      background: rgba(255,255,255,0.12);
+      backdrop-filter: blur(6px);
+    }
+
+    .slide-title {
+      font-size: 32px;
+      font-weight: 800;
+      color: #fff;
+      line-height: 1.1;
+      margin-bottom: 10px;
+      text-shadow: 0 2px 16px rgba(0,0,0,0.5);
+    }
+
+    .slide-desc {
+      font-size: 15px;
+      color: rgba(255,255,255,0.78);
+      line-height: 1.5;
+      margin-bottom: 20px;
+    }
+
+    .slide-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #fff;
+      color: #111;
+      font-size: 13px;
+      font-weight: 700;
+      padding: 10px 22px;
+      border-radius: 30px;
+      transition: background 0.2s, transform 0.18s, box-shadow 0.2s;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+    }
+
+    .slide:hover .slide-cta {
+      background: #f0f0f0;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+    }
+
+    .cta-arrow {
+      display: inline-block;
+      transition: transform 0.2s;
+    }
+
+    .slide:hover .cta-arrow {
+      transform: translateX(3px);
+    }
+
+    /* Logo / marca en esquina superior derecha */
+    .slide-logo {
+      position: absolute;
+      top: 1.5rem;
+      right: 1.8rem;
+      z-index: 4;
+      font-size: 14px;
+      font-weight: 800;
+      color: rgba(255,255,255,0.85);
+      letter-spacing: -0.02em;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    }
+
+    /* Color de acento por slide (borde izquierdo decorativo) */
+    .slide-accent {
+      position: absolute;
+      top: 2rem;
+      left: 0;
+      width: 4px;
+      height: 60px;
+      border-radius: 0 4px 4px 0;
+      z-index: 4;
+    }
+
+    /* ─── Botones de navegación ─────────────────────── */
+    .nav-btn {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 10;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.88);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, transform 0.18s, box-shadow 0.2s;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+      font-size: 18px;
+      color: #111;
+    }
+
+    .nav-btn:hover {
+      background: #fff;
+      transform: translateY(-50%) scale(1.1);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.35);
+    }
+
+    .nav-btn.prev { left: 14px; }
+    .nav-btn.next { right: 14px; }
+
+    /* ─── Indicadores (dots) ────────────────────────── */
+    .dots {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 18px;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.25);
+      border: none;
+      cursor: pointer;
+      transition: background 0.25s, transform 0.2s, width 0.3s;
+      padding: 0;
+    }
+
+    .dot.active {
+      background: #fff;
+      width: 24px;
+      border-radius: 4px;
+      transform: scale(1.05);
+    }
+
+    /* ─── Barra de progreso ─────────────────────────── */
+    .progress-bar {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      height: 3px;
+      background: rgba(255,255,255,0.85);
+      width: 0%;
+      z-index: 5;
+      border-radius: 0 2px 2px 0;
+      transition: width linear;
+    }
+
+    /* ─── Contador de slides ────────────────────────── */
+    .slide-counter {
+      position: absolute;
+      top: 1.5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 4;
+      font-size: 11px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.5);
+      letter-spacing: 0.08em;
+    }
+
+    /* ─── Responsive ────────────────────────────────── */
+    @media (max-width: 600px) {
+      .slide-inner { height: 300px; }
+      .slide-content { padding: 1.5rem 1.4rem; max-width: 90%; }
+      .slide-title { font-size: 22px; }
+      .slide-desc { font-size: 13px; margin-bottom: 14px; }
+      .nav-btn { width: 36px; height: 36px; font-size: 14px; }
+      .nav-btn.prev { left: 8px; }
+      .nav-btn.next { right: 8px; }
+    }
+  </style>
+</head>
+<body>
+
+  <p class="section-label">Promociones destacadas</p>
+
+  <div class="carousel-wrap">
+    <div class="track-container" id="trackContainer">
+      <div class="track" id="track">
+
+        <!-- ── SLIDE 1 ── -->
+        <div class="slide">
+          <a class="slide-inner" href="https://www.ejemplo-tienda1.com" target="_blank" rel="noopener">
+            <div class="slide-bg" style="background-color:#1a1a2e; background-image: url('https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=1200&q=80');"></div>
+            <div class="slide-overlay"></div>
+            <div class="slide-accent" style="background: #7C3AED;"></div>
+            <div class="slide-logo">TechStore</div>
+            <div class="slide-content">
+              <span class="slide-badge">Oferta de temporada</span>
+              <div class="slide-title">Hasta 40% de descuento en electrónica</div>
+              <div class="slide-desc">Laptops, smartphones y accesorios al mejor precio del año. Solo por esta semana.</div>
+              <span class="slide-cta">Ver ofertas <span class="cta-arrow">→</span></span>
+            </div>
+          </a>
+        </div>
+
+        <!-- ── SLIDE 2 ── -->
+        <div class="slide">
+          <a class="slide-inner" href="https://www.ejemplo-tienda2.com" target="_blank" rel="noopener">
+            <div class="slide-bg" style="background-color:#0f1f0a; background-image: url('https://images.unsplash.com/photo-1445205170230-053b83016050?w=1200&q=80');"></div>
+            <div class="slide-overlay"></div>
+            <div class="slide-accent" style="background: #10B981;"></div>
+            <div class="slide-logo">ModaStore</div>
+            <div class="slide-content">
+              <span class="slide-badge">Nueva colección</span>
+              <div class="slide-title">Moda primavera-verano 2026</div>
+              <div class="slide-desc">Los estilos más frescos de la temporada ya disponibles. Envío gratis a todo el país.</div>
+              <span class="slide-cta">Explorar colección <span class="cta-arrow">→</span></span>
+            </div>
+          </a>
+        </div>
+
+        <!-- ── SLIDE 3 ── -->
+        <div class="slide">
+          <a class="slide-inner" href="https://www.ejemplo-tienda3.com" target="_blank" rel="noopener">
+            <div class="slide-bg" style="background-color:#0c1a40; background-image: url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1200&q=80');"></div>
+            <div class="slide-overlay"></div>
+            <div class="slide-accent" style="background: #3B82F6;"></div>
+            <div class="slide-logo">TravelCo</div>
+            <div class="slide-content">
+              <span class="slide-badge">Escapada perfecta</span>
+              <div class="slide-title">Hoteles desde $29 por noche</div>
+              <div class="slide-desc">Miles de destinos disponibles con cancelación gratuita y los mejores precios garantizados.</div>
+              <span class="slide-cta">Reservar ahora <span class="cta-arrow">→</span></span>
+            </div>
+          </a>
+        </div>
+
+        <!-- ── SLIDE 4 ── -->
+        <div class="slide">
+          <a class="slide-inner" href="https://www.ejemplo-tienda4.com" target="_blank" rel="noopener">
+            <div class="slide-bg" style="background-color:#1a0a00; background-image: url('https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=1200&q=80');"></div>
+            <div class="slide-overlay"></div>
+            <div class="slide-accent" style="background: #F59E0B;"></div>
+            <div class="slide-logo">SportShop</div>
+            <div class="slide-content">
+              <span class="slide-badge">Deporte & fitness</span>
+              <div class="slide-title">Zapatillas con 30% OFF esta semana</div>
+              <div class="slide-desc">Envío gratis en compras sobre $50. Oferta válida por tiempo limitado, no te lo pierdas.</div>
+              <span class="slide-cta">Comprar ahora <span class="cta-arrow">→</span></span>
+            </div>
+          </a>
+        </div>
+
+        <!-- ── SLIDE 5 ── -->
+        <div class="slide">
+          <a class="slide-inner" href="https://www.ejemplo-tienda5.com" target="_blank" rel="noopener">
+            <div class="slide-bg" style="background-color:#0a1a10; background-image: url('https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=1200&q=80');"></div>
+            <div class="slide-overlay"></div>
+            <div class="slide-accent" style="background: #EF4444;"></div>
+            <div class="slide-logo">FoodDelivery</div>
+            <div class="slide-content">
+              <span class="slide-badge">Gastronomía</span>
+              <div class="slide-title">Pide y recibe en 30 minutos</div>
+              <div class="slide-desc">Los mejores restaurantes de tu ciudad en un solo lugar. Primer pedido con 20% de descuento.</div>
+              <span class="slide-cta">Pedir ahora <span class="cta-arrow">→</span></span>
+            </div>
+          </a>
+        </div>
+
+      </div><!-- /track -->
+
+      <!-- Barra de progreso -->
+      <div class="progress-bar" id="progressBar"></div>
+
+      <!-- Contador -->
+      <div class="slide-counter" id="counter">1 / 5</div>
+
+      <!-- Botones de navegación -->
+      <button class="nav-btn prev" id="prev" aria-label="Anterior">&#8249;</button>
+      <button class="nav-btn next" id="next" aria-label="Siguiente">&#8250;</button>
+
+    </div><!-- /track-container -->
+
+    <!-- Dots -->
+    <div class="dots" id="dots"></div>
+  </div><!-- /carousel-wrap -->
+
+  <script>
+    const track       = document.getElementById('track');
+    const progressBar = document.getElementById('progressBar');
+    const counter     = document.getElementById('counter');
+    const dotsWrap    = document.getElementById('dots');
+    const slides      = track.querySelectorAll('.slide');
+    const total       = slides.length;
+    const AUTO_MS     = 4500;
+
+    let current   = 0;
+    let autoTimer = null;
+    let progTimer = null;
+
+    /* ── Crear dots ── */
+    slides.forEach((_, i) => {
+      const d = document.createElement('button');
+      d.className = 'dot' + (i === 0 ? ' active' : '');
+      d.setAttribute('aria-label', 'Ir a diapositiva ' + (i + 1));
+      d.addEventListener('click', () => { goTo(i); resetAuto(); });
+      dotsWrap.appendChild(d);
+    });
+
+    /* ── Ir a slide ── */
+    function goTo(idx) {
+      current = ((idx % total) + total) % total;
+      track.style.transform = `translateX(-${current * 100}%)`;
+      dotsWrap.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === current));
+      counter.textContent = (current + 1) + ' / ' + total;
+      startProgress();
+    }
+
+    /* ── Barra de progreso ── */
+    function startProgress() {
+      clearTimeout(progTimer);
+      progressBar.style.transition = 'none';
+      progressBar.style.width = '0%';
+      void progressBar.offsetWidth; // force reflow
+      progressBar.style.transition = `width ${AUTO_MS}ms linear`;
+      progressBar.style.width = '100%';
+    }
+
+    /* ── Auto-avance ── */
+    function startAuto() {
+      autoTimer = setInterval(() => goTo(current + 1), AUTO_MS);
+    }
+
+    function resetAuto() {
+      clearInterval(autoTimer);
+      startAuto();
+    }
+
+    /* ── Controles ── */
+    document.getElementById('prev').addEventListener('click', () => { goTo(current - 1); resetAuto(); });
+    document.getElementById('next').addEventListener('click', () => { goTo(current + 1); resetAuto(); });
+
+    /* ── Touch / swipe ── */
+    let touchStartX = 0;
+    track.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; }, { passive: true });
+    track.addEventListener('touchend', e => {
+      const diff = touchStartX - e.changedTouches[0].clientX;
+      if (Math.abs(diff) > 40) { goTo(current + (diff > 0 ? 1 : -1)); resetAuto(); }
+    });
+
+    /* ── Teclado ── */
+    document.addEventListener('keydown', e => {
+      if (e.key === 'ArrowLeft')  { goTo(current - 1); resetAuto(); }
+      if (e.key === 'ArrowRight') { goTo(current + 1); resetAuto(); }
+    });
+
+    /* ── Pausar al hacer hover ── */
+    const container = document.getElementById('trackContainer');
+    container.addEventListener('mouseenter', () => { clearInterval(autoTimer); progressBar.style.animationPlayState = 'paused'; });
+    container.addEventListener('mouseleave', () => { resetAuto(); });
+
+    /* ── Init ── */
+    goTo(0);
+    startAuto();
+  </script>
+</body>
+</html>
